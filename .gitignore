@@ -1,5 +1,5 @@
 *.cache
 vendor
-utils
 ~/.bashrc
 bashrc
+Hash.php

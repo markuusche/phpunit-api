@@ -2,7 +2,7 @@
 
 use Faker\Factory;
 use PHPUnit\Framework\TestCase;
-require_once 'tests/helpers/TestHelper.php'; 
+require_once 'utils/TestHelper.php'; 
 
 class GetBalanceTest extends TestCase 
 {
@@ -28,15 +28,21 @@ class GetBalanceTest extends TestCase
             queryParams: $queryParams);
     }
 
-    public function invalids ($value=null)
+    public function invalids ($value=null, $nonexist=false)
     {
         $randomName = $value ?? 'invalid@@' . $this->faker->userName() . '!!test_qa$$';
         $response = $this->responseApi($randomName);
         $status = $response['status'];
         $body = $response['body'];
         $this->assertEquals(200, actual: $status);
-        $this->assertEquals('E-104', $body['rs_code']);
-        $this->assertEquals('invalid parameter or value', $body['rs_message']);
+        if ($nonexist){
+            $this->assertEquals('S-104', $body['rs_code']);
+            $this->assertEquals('player not available', $body['rs_message']);
+        }
+        else {
+            $this->assertEquals('E-104', $body['rs_code']);
+            $this->assertEquals('invalid parameter or value', $body['rs_message']);
+        }
     }
 
     public function valids($player = null)
@@ -59,12 +65,8 @@ class GetBalanceTest extends TestCase
 
     public function testValidNonExistentUser()
     {
-        $response = $this->responseApi($this->faker->word() . 'QATest123');
-        $status = $response['status'];
-        $body = $response['body'];
-        $this->assertEquals(200, actual: $status);
-        $this->assertEquals('S-104', $body['rs_code']);
-        $this->assertEquals('player not available', $body['rs_message']);
+        $name = $this->faker->word() . "QATest";
+        $this->invalids($name, true);
     }
 
     public function testInvalidPlayerId ()

@@ -1,6 +1,7 @@
 <?php
 
 use Faker\Factory;
+use Ramsey\Uuid\Uuid;
 
 class TestHelper
 {
@@ -42,16 +43,33 @@ class TestHelper
         ];
     }
 
-    function randomSymbols($length = 10) {
+    function randomSymbols($length = 10)
+    {
         $symbols = '!@#$%^&*()_+-=[]{};:,.<>?';
         return substr(str_shuffle(str_repeat($symbols, ceil($length / strlen($symbols)))), 0, $length);
     }
     
-    function generateString($length) {
+    function generateString($length)
+    {
         return bin2hex(random_bytes(floor($length / 2)));
     }
 
-    function generateRandomNumber($min=1000.01, $max=15000.99) {
+    function generateRandomNumber($min=1000.01, $max=15000.99)
+    {
         return round(mt_rand($min * 100, $max * 100) / 100, 2);
+    }
+
+    function generateUuid($length=4)
+    {
+        $uuid = Uuid::uuid4()->toString();
+        $slicedUuid = substr($uuid, 0, $length);
+        return $slicedUuid;
+    }
+
+    function generateUniqueName()
+    {
+        $slicedUuid = $this->generateUUid();
+        $name = 'unique' . $this->faker->word() . $slicedUuid . '_test_qa';
+        return $name;
     }
 }

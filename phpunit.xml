@@ -1,9 +1,9 @@
 <phpunit bootstrap="vendor/autoload.php" colors="true">
     <testsuites>
         <testsuite name="TestAPI">
-            <file>./tests/api/transfer/RegisterTest.php</file>
-            <file>./tests/api/transfer/GetBalanceTest.php</file>
-            <file>./tests/api/transfer/DepositTest.php</file>
+            <file>./tests/transfer/RegisterTest.php</file>
+            <file>./tests/transfer/GetBalanceTest.php</file>
+            <file>./tests/transfer/DepositTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

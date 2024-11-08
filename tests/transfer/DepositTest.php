@@ -2,8 +2,8 @@
 
 use Faker\Factory;
 use PHPUnit\Framework\TestCase;
-require_once 'tests/helpers/TestHelper.php';
-require_once 'tests/utils/hash.php';
+require_once 'utils/TestHelper.php';
+require_once 'utils/Hash.php';
 
 class DepositTest extends TestCase 
 {
