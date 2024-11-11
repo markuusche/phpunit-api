@@ -49,9 +49,8 @@ class TestHelper
         return substr(str_shuffle(str_repeat($symbols, ceil($length / strlen($symbols)))), 0, $length);
     }
     
-    function generateString($length)
-    {
-        return bin2hex(random_bytes(floor($length / 2)));
+    function generateString($length) {
+        return substr(bin2hex(random_bytes(ceil($length / 2))), 0, $length);
     }
 
     function generateRandomNumber($min=1000.01, $max=15000.99)

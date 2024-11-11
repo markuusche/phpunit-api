@@ -28,24 +28,7 @@ class GetBalanceTest extends TestCase
             queryParams: $queryParams);
     }
 
-    public function invalids ($value=null, $nonexist=false)
-    {
-        $randomName = $value ?? 'invalid@@' . $this->faker->userName() . '!!test_qa$$';
-        $response = $this->responseApi($randomName);
-        $status = $response['status'];
-        $body = $response['body'];
-        $this->assertEquals(200, actual: $status);
-        if ($nonexist){
-            $this->assertEquals('S-104', $body['rs_code']);
-            $this->assertEquals('player not available', $body['rs_message']);
-        }
-        else {
-            $this->assertEquals('E-104', $body['rs_code']);
-            $this->assertEquals('invalid parameter or value', $body['rs_message']);
-        }
-    }
-
-    public function valids($player = null)
+    public function valid ($player = null)
     {
         $data = $player ?? getenv('phpId');
         $response = $this->responseApi($data);
@@ -58,39 +41,60 @@ class GetBalanceTest extends TestCase
         $this->assertArrayHasKey('current_balance', $body);
     }
 
-    public function testValidUser()
+    public function invalid ($value = null, $nonexist = false)
     {
-        $this->valids();
+        $randomName = $value ?? 'invalid@@' . $this->faker->userName() . '!!test_qa$$';
+        $response = $this->responseApi($randomName);
+        $status = $response['status'];
+        $body = $response['body'];
+        $this->assertEquals(200, actual: $status);
+        if ($nonexist)
+        {
+            $this->assertEquals('S-104', $body['rs_code']);
+            $this->assertEquals('player not available', $body['rs_message']);
+        }
+        else
+        {
+            $this->assertEquals('E-104', $body['rs_code']);
+            $this->assertEquals('invalid parameter or value', $body['rs_message']);
+        }
+    }
+
+    public function testValidBalanceFetch()
+    {
+        $this->valid();
     }
 
     public function testValidNonExistentUser()
     {
         $name = $this->faker->word() . "QATest";
-        $this->invalids($name, true);
+        $this->invalid($name, true);
     }
+
+    // invalid player name
 
     public function testInvalidPlayerId ()
     {
-        $this->invalids();
+        $this->invalid();
     }
 
     public function testInvalidPlayerIdWhiteSpace ()
     {
-        $this->invalids('        ');
+        $this->invalid('        ');
     }
 
     public function testInvalidPlayerIdEmpty()
     {
-        $this->invalids('');
+        $this->invalid('');
     }
 
     public function testInvalidPlayerIdWithSymbols ()
     {
-        $this->invalids($this->testhelper->randomSymbols());
+        $this->invalid($this->testhelper->randomSymbols());
     }
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
-        $this->invalids($this->testhelper->generateString(100));
+        $this->invalid($this->testhelper->generateString(65));
     }
 }

@@ -18,13 +18,13 @@ class DepositTest extends TestCase
         $this->generate = new Hash();
     }
 
-    public function responseApi ()
+    public function responseApi ($player = null, $tr = null, $tra = null, $timestamp = null)
     {
         $data = [
-            getenv("yummy") => getenv('phpId'),
-            getenv("tr") => uniqid(),  
-            getenv("tra") => $this->testhelper->generateRandomNumber(),
-            "timestamp" => time() 
+            getenv("yummy") => $player ?? getenv('phpId'),
+            getenv("tr") => $tr ?? uniqid(),
+            getenv("tra") => $tra ?? $this->testhelper->generateRandomNumber(),
+            "timestamp" => $timestamp ?? time() 
         ];
 
         $signature = $this->generate->signature($data);
@@ -32,18 +32,85 @@ class DepositTest extends TestCase
 
         return $this->testhelper->callApi(
             'POST',
-            getenv("phpDp"), 
-            $data, 
+            getenv("phpDp"),
+            $data,
             queryParams: []);
     }
 
+    public function valid ()
+    {
+        $response = $this->responseApi();
+        $body = $response['body'];
+        $this->assertEquals(200, actual: $response['status']);
+        $this->assertEquals('S-100', actual: $body['rs_code']);
+        $this->assertEquals('success', actual: $body['rs_message']);
+        $this->assertArrayHasKey('balance', $body);
+    }
+
+    public function invalid ($player = null, $tr = null, $tra = null, $timestamp = null, $nonexist = false)
+    {
+        $response = $this->responseApi($player, $tr, $tra, $timestamp);
+        $status = $response['status'];
+        $body = $response['body'];
+        $this->assertEquals(200, actual: $status);
+        if ($nonexist)
+        {
+            $this->assertEquals('S-104', $body['rs_code']);
+            $this->assertEquals('player not available', $body['rs_message']);
+        }
+        else
+        {
+            $this->assertEquals('E-104', $body['rs_code']);
+            $this->assertEquals('invalid parameter or value', $body['rs_message']);
+        }
+    }
+
+    // valid request deposit
+
     public function testValidDeposit ()
     {
-       $response = $this->responseApi();
-       $body = $response['body'];
-       $this->assertEquals(200, actual: $response['status']);
-       $this->assertEquals('S-100', actual: $body['rs_code']);
-       $this->assertEquals('success', actual: $body['rs_message']);
-       $this->assertArrayHasKey('balance', $body);
+        $this->valid();
+    }
+
+    public function testValidNonExistentPlayer ()
+    {
+        $name = $this->faker->word() . "QATest";
+        $this->invalid($name, null, null, null, true);
+    }
+
+    public function testValidNonExistentPlayerNumberOnly ()
+    {
+        $name = $this->testhelper->generateRandomNumber();
+        $this->invalid(strval(intval($name)), null, null, null, true);
+    }
+
+    // invalid player name 
+
+    public function testInvalidPlayerIdWhiteSpace ()
+    {
+        $this->invalid('        ');
+    }
+
+    public function testInvalidPlayerIdEmpty()
+    {
+        $this->invalid('');
+    }
+
+    public function testInvalidPlayerIdWithSymbols ()
+    {
+        $player = $this->testhelper->randomSymbols();
+        $this->invalid($player);
+    }
+
+    public function testInvalidPlayerIdMinimumCharacters()
+    {
+        $player = $this->testhelper->generateUUid(2);
+        $this->valid($player);
+    }
+
+    public function testInvalidPlayerIdBeyondMaximumCharacters ()
+    {
+        $this->invalid($this->testhelper->generateString(65));
     }
 }
+ 
