@@ -22,6 +22,8 @@ Coverage
    * [GET Balance]
    * [POST Register]
    * [POST Deposit]
+   * [POST Withdraw]
+   * [POST Transaction Check]
 
 Pre-Requisites
 --------------
