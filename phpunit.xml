@@ -4,6 +4,7 @@
             <file>./tests/transfer/RegisterTest.php</file>
             <file>./tests/transfer/GetBalanceTest.php</file>
             <file>./tests/transfer/DepositTest.php</file>
+            <file>./tests/transfer/WithdrawTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

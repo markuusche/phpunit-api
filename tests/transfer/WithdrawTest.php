@@ -2,11 +2,11 @@
 
 require_once 'tests/WalletBaseClass.php';
 
-class DepositTest extends WalletBaseClass
+class WithdrawTest extends WalletBaseClass
 {
     public function setUp(): void
     {
         parent::setUp();
-        $this->setApiEndpoint(getenv("phpDp"));
+        $this->setApiEndpoint(getenv("phpWd"));
     }
 }
