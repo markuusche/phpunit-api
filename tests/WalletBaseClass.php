@@ -29,10 +29,15 @@ class WalletBaseClass extends TestCase
 
     public function responseApi ($player = null, $tr = null, $tra = null, $timestamp = null)
     {
+        $id = uniqid();
+        if ($player === null && $tr === null && $tra === null && $timestamp === null){
+            $GLOBALS['transaction'] = $id;
+        }
+
         $data = [
             getenv("yummy") => $player ?? getenv('phpId'),
-            getenv("tr") => $tr ?? uniqid(),
-            getenv("tra") => $tra ?? $this->testhelper->generateLongNumbers(34),
+            getenv("tr") => $tr ?? $id,
+            getenv("tra") => $tra ?? $this->testhelper->generateRandomNumber(),
             "timestamp" => $timestamp ?? time() 
         ];
 
@@ -54,7 +59,7 @@ class WalletBaseClass extends TestCase
         $this->assertEquals('S-100', actual: $body['rs_code']);
         $this->assertEquals('success', actual: $body['rs_message']);
         $this->assertArrayHasKey('balance', $body);
-        return $body['balance'];
+        return $body;
     }
 
     public function invalid ($player = null, $tr = null, $tra = null, $timestamp = null, $nonexist = false)
@@ -79,11 +84,11 @@ class WalletBaseClass extends TestCase
 
     public function testValidDepositOrWithdraw ()
     {
-        if ($this->apiEndpoint === getenv("phpWd")){
+        if ($this->apiEndpoint === getenv("phpWd")) {
             $this->valid(null, null, self::$value[0]);
         } else {
             $amount = $this->valid();
-            self::$value[] = $amount;
+            self::$value[] = $amount['balance'];
         }
     }
 
