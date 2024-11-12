@@ -19,8 +19,8 @@ Project Dependencies
 Coverage
 ---------
 
-   * [GET User Balance]
-   * [POST Register User]
+   * [GET Balance]
+   * [POST Register]
    * [POST Deposit]
 
 Pre-Requisites

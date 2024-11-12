@@ -72,6 +72,8 @@ class DepositTest extends TestCase
         $this->valid();
     }
 
+    // valid player name
+
     public function testValidNonExistentPlayer ()
     {
         $name = $this->faker->word() . "QATest";
@@ -111,6 +113,89 @@ class DepositTest extends TestCase
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
         $this->invalid($this->testhelper->generateString(65));
+    }
+
+    // invalid transaction id
+
+    public function testInvalidTransactionIdWithSymbols () 
+    {
+        $id = $this->testhelper->randomSymbols();
+        $this->invalid(null, $id);
+    }
+
+    public function testInvalidTransactionIdEmpty () 
+    {
+        $this->invalid(null, '');
+    }
+
+    public function testInvalidTransactionIdWithWhiteSpaces ()
+    {
+        $this->invalid(null, '     ');
+    }
+
+    public function testInvalidTransactionIdBelowMinimumCharacters ()
+    {
+        $number = intdiv(time(), 1000);
+        $this->invalid(null, $number);
+    }
+
+    public function testInvalidTransactionIdBeyondMaximumCharacters ()
+    {
+        $timeString = $this->testhelper->generateLongNumbers(97);
+        $this->invalid(null, $timeString);
+    }
+
+    // invalid transaction amount
+
+    public function testInvalidTransactionAmountIdWithSymbols () 
+    {
+        $id = $this->testhelper->randomSymbols();
+        $this->invalid(null, null, $id);
+    }
+
+    public function testInvalidTransactionAmountEmpty () 
+    {
+        $this->invalid(null, null, '');
+    }
+
+    public function testInvalidTransactionAmountWithWhiteSpaces ()
+    {
+        $this->invalid(null, null, '     ');
+    }
+
+    public function testInvalidTransactionAmountBelowMinimumAmount ()
+    {
+        $this->invalid(null, null, '0');
+    }
+
+    public function testInvalidTransactionAmountBeyondMaximumAmount ()
+    {
+        $timeString = $this->testhelper->generateLongNumbers(35);
+        $this->invalid(null, null, $timeString);
+    }
+
+    // invalid timestamp
+
+    public function testInvalidTimestampWithSymbols ()
+    {
+        $symbols = $this->testhelper->randomSymbols();
+        $this->invalid(null, null,  null, $symbols);
+    }
+
+    public function testInvalidTimestampEmpty ()
+    {
+        $this->invalid(null, null, null,  '');
+    }
+
+    public function testInvalidTimestampWhiteSpace ()
+    {
+        $this->invalid(null, null, null,  '    ');
+    }
+
+    public function testInvalidTimestampWithLetters ()
+    {
+        $string = $this->testhelper->generateUniqueName();
+        $this->invalid(null, null, null, $string);
     }
 }
  

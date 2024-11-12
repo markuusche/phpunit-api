@@ -71,4 +71,15 @@ class TestHelper
         $name = 'unique' . $this->faker->word() . $slicedUuid . '_test_qa';
         return $name;
     }
+
+    function generateLongNumbers ($length = 100)
+    {
+        $long = '';
+        while (strlen($long) < $length) {
+            $long .= time();
+        }
+        
+        $long = substr($long, 0, $length);
+        return $long;
+    }
 }
