@@ -22,13 +22,14 @@ class GetBalanceTest extends TestCase
         ];
 
         return $this->testhelper->callApi(
+            'phpBase',
             'GET',
             getenv("GB"), 
             $data, 
             queryParams: $queryParams);
     }
 
-    public function valid ($player = null)
+    public function testValidBalanceFetch ($player = null)
     {
         $data = $player ?? getenv('phpId');
         $response = $this->responseApi($data);
@@ -58,11 +59,6 @@ class GetBalanceTest extends TestCase
             $this->assertEquals('E-104', $body['rs_code']);
             $this->assertEquals('invalid parameter or value', $body['rs_message']);
         }
-    }
-
-    public function testValidBalanceFetch()
-    {
-        $this->valid();
     }
 
     public function testValidNonExistentUser()
@@ -95,6 +91,6 @@ class GetBalanceTest extends TestCase
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
-        $this->invalid($this->testhelper->generateString(65));
+        $this->invalid($this->testhelper->generateAlphaNumString(65));
     }
 }

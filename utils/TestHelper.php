@@ -18,7 +18,7 @@ class TestHelper
         return $this->faker;
     }
     
-    public function callApi($method, $endpoint, $data = [], $queryParams = [])
+    public function callApi($base, $method, $endpoint, $data = [], $queryParams = [])
     {
         $client = new GuzzleHttp\Client;
         $options = [
@@ -35,7 +35,7 @@ class TestHelper
             $options['query'] = $queryParams;
         }
 
-        $response = $client->request($method, getenv('phpbase'). $endpoint, $options);
+        $response = $client->request($method, getenv($base). $endpoint, $options);
 
         return [
             'status' => $response->getStatusCode(),
@@ -49,7 +49,7 @@ class TestHelper
         return substr(str_shuffle(str_repeat($symbols, ceil($length / strlen($symbols)))), 0, $length);
     }
     
-    function generateString($length) {
+    function generateAlphaNumString($length) {
         return substr(bin2hex(random_bytes(ceil($length / 2))), 0, $length);
     }
 

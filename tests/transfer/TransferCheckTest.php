@@ -20,6 +20,7 @@ class TransferCheckTest extends TestCase
         ];
 
         return $this->testhelper->callApi(
+            'phpBase',
             'POST',
             getenv("TC"), 
             $data, 
@@ -57,7 +58,7 @@ class TransferCheckTest extends TestCase
 
     public function testValidNonExistentTransaction ()
     {
-        $this->invalid($this->testhelper->generateString(96), true);
+        $this->invalid($this->testhelper->generateAlphaNumString(96), true);
     }
 
     public function testInvalidTransactionWithWhiteSpace ()
@@ -84,6 +85,6 @@ class TransferCheckTest extends TestCase
 
     public function testInvalidTransactionBeyondMinimumCharacters ()
     {
-        $this->invalid($this->testhelper->generateString(97));
+        $this->invalid($this->testhelper->generateAlphaNumString(97));
     }
 }

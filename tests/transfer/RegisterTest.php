@@ -24,6 +24,7 @@ class RegisterTest extends TestCase
         ];
 
         return $this->testhelper->callApi(
+            'phpBase',
             'POST',
             getenv("RG"), 
             $data, 
@@ -78,7 +79,7 @@ class RegisterTest extends TestCase
 
     public function testValidPlayerIdMaximumCharacters ()
     {
-        $words = $this->testhelper->generateString(60);
+        $words = $this->testhelper->generateAlphaNumString(60);
         $player = $this->testhelper->generateUUid() . $words;
         $this->valid($player);
     }
@@ -93,7 +94,7 @@ class RegisterTest extends TestCase
 
     public function testValidNicknameMaximumCharacters ()
     {
-        $characters = $this->testhelper->generateString(64);
+        $characters = $this->testhelper->generateAlphaNumString(64);
         $this->valid(null, $characters);
     }
 
@@ -136,7 +137,7 @@ class RegisterTest extends TestCase
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
-        $words = $this->testhelper->generateString(65);
+        $words = $this->testhelper->generateAlphaNumString(65);
         $this->invalid($words);
     }
 
@@ -166,7 +167,7 @@ class RegisterTest extends TestCase
 
     public function testInvalidNicknameBeyondMaximumCharacters ()
     {
-        $characters = $this->testhelper->generateString(65);
+        $characters = $this->testhelper->generateAlphaNumString(65);
         $this->invalid($characters);
     }
 

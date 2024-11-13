@@ -45,6 +45,7 @@ class WalletBaseClass extends TestCase
         $data["signature"] = $signature;
 
         return $this->testhelper->callApi(
+            'phpBase',
             'POST',
             $this->apiEndpoint,
             $data,
@@ -132,7 +133,7 @@ class WalletBaseClass extends TestCase
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
-        $this->invalid($this->testhelper->generateString(65));
+        $this->invalid($this->testhelper->generateAlphaNumString(65));
     }
 
     // invalid transaction id
