@@ -1,6 +1,5 @@
 <?php
 
-use Faker\Factory;
 use PHPUnit\Framework\TestCase;
 require_once 'utils/TestHelper.php';
 require_once 'utils/Hash.php';
@@ -31,7 +30,15 @@ class WalletBaseClass extends TestCase
     {
         $id = uniqid();
         if ($player === null && $tr === null && $tra === null && $timestamp === null){
-            $GLOBALS['transaction'] = $id;
+            if ($this->apiEndpoint === getenv("phpDp")){
+                $GLOBALS['depositTransaction'] = $id;
+
+            }
+        }
+        else if ($player === null && $tr === null && $tra === self::$value[0] && $timestamp === null) {
+            if ($this->apiEndpoint === getenv("phpWd")) {
+                $GLOBALS['withdrawTransaction'] = $id;
+            }
         }
 
         $data = [

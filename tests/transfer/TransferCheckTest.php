@@ -13,10 +13,10 @@ class TransferCheckTest extends TestCase
         $this->testhelper = new TestHelper();
     }
 
-    public function responseApi ($transaction = null)
+    public function responseApi ($transaction)
     {
         $data = [
-            getenv("td") => $transaction ?? $GLOBALS['transaction']
+            getenv("td") => $transaction
         ];
 
         return $this->testhelper->callApi(
@@ -27,7 +27,7 @@ class TransferCheckTest extends TestCase
             queryParams: []);
     }
 
-    public function valid ($transaction = null)
+    public function valid ($transaction)
     {
         $response = $this->responseApi($transaction);
         $body = $response['body'];
@@ -36,7 +36,7 @@ class TransferCheckTest extends TestCase
         $this->assertEquals('success', actual: $body['rs_message']);
     }
 
-    public function invalid ($transaction = null, $nonExistent = false)
+    public function invalid ($transaction, $nonExistent = false)
     {
         $response = $this->responseApi($transaction);
         $body = $response['body'];
@@ -51,9 +51,13 @@ class TransferCheckTest extends TestCase
         }
     }
 
-    public function testValidTransaction ()
+    public function testValidDepositTransaction ()
     {
-        $this->valid();
+        $this->valid($GLOBALS['depositTransaction']);
+    }
+    public function testValidWithdrawTransaction ()
+    {
+        $this->valid($GLOBALS['withdrawTransaction']);
     }
 
     public function testValidNonExistentTransaction ()

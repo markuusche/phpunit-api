@@ -1,2 +1,3 @@
 <?php
-$GLOBALS['transaction'] = null;
+$GLOBALS['depositTransaction'] = null;
+$GLOBALS['withdrawTransaction'] = null;

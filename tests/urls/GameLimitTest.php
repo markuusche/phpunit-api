@@ -19,7 +19,7 @@ class GameLimitTest extends TestCase
         ];
 
         return $this->testhelper->callApi(
-            'phpOps',
+            'phpBase',
             'GET',
             getenv("phpBl"), 
             queryParams: $params);
@@ -61,7 +61,7 @@ class GameLimitTest extends TestCase
 
     public function testValidNonExistentLimit ()
     {
-        $number = $this->testhelper->generateLongNumbers(5);
+        $number = $this->testhelper->generateLongNumbers(10);
         $this->invalid(intval($number), true);
     }
 
