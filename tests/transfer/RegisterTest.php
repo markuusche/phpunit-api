@@ -36,6 +36,7 @@ class RegisterTest extends TestCase
         $response = $this->responseApi($player, $nickname, $timestamp);
         $status = $response['status'];
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, $status);
         if ($exist)
         {
@@ -44,8 +45,15 @@ class RegisterTest extends TestCase
         }
         else
         {
-            $this->assertEquals('S-100', $body['rs_code']);
-            $this->assertEquals('success', $body['rs_message']);
+            try {
+                $this->assertEquals('S-100', $body['rs_code']);
+                $this->assertEquals('success', $body['rs_message']);
+            }
+            // Player ID accepts a minimum of 3 characters, so repeated runs may generate IDs that are already registered.
+             catch (Exception) {
+                $this->assertEquals('S-121', $body['rs_code']);
+                $this->assertEquals('player already exists', $body['rs_message']);
+             }
         }
     }
     
@@ -54,6 +62,7 @@ class RegisterTest extends TestCase
         $response = $this->responseApi($player, $nickname, $timestamp);
         $status = $response['status'];
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $status);
         $this->assertEquals('E-104', $body['rs_code']);
         $this->assertEquals('invalid parameter or value', $body['rs_message']);

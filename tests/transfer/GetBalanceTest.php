@@ -35,6 +35,7 @@ class GetBalanceTest extends TestCase
         $response = $this->responseApi($data);
         $status = $response['status'];
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $status);
         $this->assertEquals('S-100', $body['rs_code']);
         $this->assertEquals('success', $body['rs_message']);
@@ -48,6 +49,7 @@ class GetBalanceTest extends TestCase
         $response = $this->responseApi($randomName);
         $status = $response['status'];
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $status);
         if ($nonexist)
         {

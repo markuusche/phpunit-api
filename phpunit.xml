@@ -6,6 +6,7 @@
             <file>./tests/transfer/DepositTest.php</file>
             <file>./tests/transfer/WithdrawTest.php</file>
             <file>./tests/transfer/TransferCheckTest.php</file>
+            <file>./tests/urls/GameListTest.php</file>
             <file>./tests/urls/GameLimitTest.php</file>
         </testsuite>
     </testsuites>

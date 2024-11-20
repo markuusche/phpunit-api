@@ -31,6 +31,7 @@ class TransferCheckTest extends TestCase
     {
         $response = $this->responseApi($transaction);
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
         $this->assertEquals('S-100', actual: $body['rs_code']);
         $this->assertEquals('success', actual: $body['rs_message']);
@@ -40,6 +41,7 @@ class TransferCheckTest extends TestCase
     {
         $response = $this->responseApi($transaction);
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
         if ($nonExistent){
             $this->assertEquals('S-119', actual: $body['rs_code']);

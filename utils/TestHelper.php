@@ -82,4 +82,11 @@ class TestHelper
         $long = substr($long, 0, $length);
         return $long;
     }
+
+    function randomArrayChoice($array)
+    {
+        $random = array_rand($array);
+        $choice = $array[$random];
+        return $choice;
+    }
 }

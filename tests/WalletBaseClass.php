@@ -63,6 +63,7 @@ class WalletBaseClass extends TestCase
     {
         $response = $this->responseApi($player, $tr, $tra, $timestamp);
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
         $this->assertEquals('S-100', actual: $body['rs_code']);
         $this->assertEquals('success', actual: $body['rs_message']);
@@ -75,6 +76,7 @@ class WalletBaseClass extends TestCase
         $response = $this->responseApi($player, $tr, $tra, $timestamp);
         $status = $response['status'];
         $body = $response['body'];
+        $this->assertIsArray($body);
         $this->assertEquals(200, actual: $status);
         if ($nonexist)
         {
