@@ -8,6 +8,7 @@
             <file>./tests/transfer/TransferCheckTest.php</file>
             <file>./tests/urls/GameListTest.php</file>
             <file>./tests/urls/GameLimitTest.php</file>
+            <file>./tests/urls/GameUrlTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

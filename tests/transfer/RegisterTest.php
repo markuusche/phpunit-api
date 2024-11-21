@@ -23,12 +23,7 @@ class RegisterTest extends TestCase
             "timestamp" => $timestamp ?? time()
         ];
 
-        return $this->testhelper->callApi(
-            'phpBase',
-            'POST',
-            getenv("RG"), 
-            $data, 
-            queryParams: []);
+        return $this->testhelper->callApi('phpBase', 'POST', getenv("RG"), $data);
     }
 
     public function valid ($player = null, $nickname = null, $timestamp = null, $exist = false)
@@ -77,7 +72,7 @@ class RegisterTest extends TestCase
 
     public function testValidPlayerIdExistence()
     {
-        $this->valid(getenv("phpId"), null, null, true);
+        $this->valid(getenv("phpId"), exist: true);
     }
 
     public function testValidPlayerIdMinimumCharacters()
@@ -98,26 +93,26 @@ class RegisterTest extends TestCase
     public function testValidNicknameMinimumCharacters ()
     {
         $characters = $this->testhelper->generateUUid(8);
-        $this->valid(null, $characters);
+        $this->valid(nickname: $characters);
     }
 
     public function testValidNicknameMaximumCharacters ()
     {
         $characters = $this->testhelper->generateAlphaNumString(64);
-        $this->valid(null, $characters);
+        $this->valid(nickname: $characters);
     }
 
     // valid timestamp test cases
 
     public function testValidTimestamp ()
     {
-        $this->valid(null, null, null);
+        $this->valid(timestamp: time());
     }
 
     public function testValidTimestampSingleDigit ()
     {
         $random = rand(1, 9);
-        $this->valid(null, null, $random);
+        $this->valid(timestamp: $random);
     }
 
     // invalid player name test cases
@@ -155,23 +150,23 @@ class RegisterTest extends TestCase
     public function testInvalidNicknameWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(null, $symbols);
+        $this->invalid(nickname: $symbols);
     }
 
     public function testInvalidNicknameEmpty ()
     {
-        $this->invalid(null, '');
+        $this->invalid(nickname: '');
     }
 
     public function testInvalidNicknameWhiteSpace ()
     {
-        $this->invalid(null, '  ');
+        $this->invalid(nickname: '  ');
     }
 
     public function testInvalidNicknameBelowMinimumCharacters ()
     {
         $name = $this->testhelper->generateUUid(7);
-        $this->invalid(null, $name);
+        $this->invalid(nickname: $name);
     }
 
     public function testInvalidNicknameBeyondMaximumCharacters ()
@@ -185,22 +180,22 @@ class RegisterTest extends TestCase
     public function testInvalidTimestampWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(null, null,  $symbols);
+        $this->invalid(timestamp: $symbols);
     }
 
     public function testInvalidTimestampEmpty ()
     {
-        $this->invalid(null, null,  '');
+        $this->invalid(timestamp:  '');
     }
 
     public function testInvalidTimestampWhiteSpace ()
     {
-        $this->invalid(null, null,  '    ');
+        $this->invalid(timestamp: '    ');
     }
 
     public function testInvalidTimestampWithLetters ()
     {
         $string = $this->testhelper->generateUniqueName();
-        $this->invalid(null, null,  $string);
+        $this->invalid(timestamp: $string);
     }
 }

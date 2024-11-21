@@ -2,6 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 require_once 'utils/TestHelper.php'; 
+require_once 'tests/DataGlobals.php'; 
 
 class GameLimitTest extends TestCase 
 {
@@ -40,6 +41,7 @@ class GameLimitTest extends TestCase
         foreach ($body['records'] as $item) {
             if ($noQuery) {
                 self::$glimit[] = $item['id'];
+                $GLOBALS['limit'][] = $item['id'];
             }
             $this->assertArrayHasKey('id', $item);
             $this->assertArrayHasKey('min_limit', $item);
@@ -52,7 +54,7 @@ class GameLimitTest extends TestCase
         }
     }
 
-    public function invalid ($noQuery, $limit, $nonExistent = false)
+    public function invalid ($noQuery = false, $limit = null, $nonExistent = false)
     {
         $response = $this->responseApi($noQuery, $limit);
         $status = $response['status'];
@@ -78,47 +80,47 @@ class GameLimitTest extends TestCase
     public function testValidGameLimit ()
     {
         $limit = $this->testhelper->randomArrayChoice(self::$glimit);
-        $this->valid(false, $limit);
+        $this->valid(limit: $limit);
     }
 
     public function testValidNonExistentLimit ()
     {
         $number = $this->testhelper->generateLongNumbers(10);
-        $this->invalid(false, intval($number), true);
+        $this->invalid(limit: intval($number), nonExistent: true);
     }
 
    // invalids
 
     public function testInvalidLimitWithSymbols ()
     {
-        $this->invalid(false, $this->testhelper->randomSymbols());
+        $this->invalid(limit: $this->testhelper->randomSymbols());
     }
     
     public function testInvalidLimitEmpty ()
     {
-        $this->invalid(false, '');
+        $this->invalid(limit: '');
     }
 
     public function testInvalidLimitWithWhiteSpaces ()
     {
-        $this->invalid(false, '     ');
+        $this->invalid(limit: '     ');
     }
 
     public function testInvalidLimitWithLetters ()
     {
         $string = $this->testhelper->generateUniqueName();
-        $this->invalid(false, $string);
+        $this->invalid(limit: $string);
     }
 
     public function testInvalidLimitWithAlphaNumCharacters ()
     {
         $string = $this->testhelper->generateAlphaNumString(10);
-        $this->invalid(false, $string);
+        $this->invalid(limit: $string);
     }
     
     public function testInvalidLimitBeyondMaximumCharacters ()
     {
         $string = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(false, $string);
+        $this->invalid(limit: $string);
     }
 }

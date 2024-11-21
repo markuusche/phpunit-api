@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 require_once 'utils/TestHelper.php'; 
-require_once 'tests/Transactions.php'; 
+require_once 'tests/DataGlobals.php'; 
 
 class TransferCheckTest extends TestCase 
 {
@@ -19,12 +19,7 @@ class TransferCheckTest extends TestCase
             getenv("td") => $transaction
         ];
 
-        return $this->testhelper->callApi(
-            'phpBase',
-            'POST',
-            getenv("TC"), 
-            $data, 
-            queryParams: []);
+        return $this->testhelper->callApi('phpBase', 'POST', getenv("TC"), $data);
     }
 
     public function valid ($transaction)

@@ -65,9 +65,9 @@ class TestHelper
         return $slicedUuid;
     }
 
-    function generateUniqueName()
+    function generateUniqueName($length = 4)
     {
-        $slicedUuid = $this->generateUUid();
+        $slicedUuid = $this->generateUUid($length);
         $name = 'unique' . $this->faker->word() . $slicedUuid . '_test_qa';
         return $name;
     }
@@ -81,6 +81,16 @@ class TestHelper
         
         $long = substr($long, 0, $length);
         return $long;
+    }
+
+    function generateRandomLetters ($length = 10)
+    {
+        $alpha = "abcdefghijklmnopqrstuvwxyz";
+        $letters = '';
+        while (strlen($letters) < $length){
+            $letters .= $alpha[rand(0, strlen($alpha) - 1)];
+        }
+        return $letters;
     }
 
     function randomArrayChoice($array)

@@ -2,6 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 require_once 'utils/TestHelper.php'; 
+require_once 'tests/DataGlobals.php'; 
 
 class GameListTest extends TestCase 
 {
@@ -51,6 +52,7 @@ class GameListTest extends TestCase
         $this->assertArrayHasKey('records', $body);
         
         foreach ($body['records'] as $item){
+            $GLOBALS['gameIds'][] = $item['game_id'];
             self::$tag[] = $item['game_id'];
             self::$type[] = $item['game_type'];
             self::$games[] = $item['game_name'];
@@ -63,7 +65,7 @@ class GameListTest extends TestCase
             if ($item['game_name'] != null) {
                 $this->assertIsString($item['game_name']);
             }
-            $this->assertMatchesRegularExpression('/^https?:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/.*)?$/', $item['image']);
+            $this->assertTrue(filter_var($item['image'], FILTER_VALIDATE_URL) !== false);
         }
     }
 
@@ -92,19 +94,19 @@ class GameListTest extends TestCase
     public function testValidGameListTag ()
     {
         $tag = $this->testhelper->randomArrayChoice(self::$tag);
-        $this->valid(false, $tag);
+        $this->valid(gi: $tag);
     }
 
     public function testValidGameListType ()
     {
         $type = $this->testhelper->randomArrayChoice(self::$type);
-        $this->valid(false, null, $type);
+        $this->valid(gt: $type);
     }
 
     public function testValidGameListName ()
     {
         $games = $this->testhelper->randomArrayChoice(self::$games);
-        $this->valid(false, null, null, $games);
+        $this->valid(gn: $games);
     }
 
     // valid no data
@@ -112,13 +114,13 @@ class GameListTest extends TestCase
     public function testValidNoDataGameType ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(false, null, $symbols, null, true);
+        $this->invalid(gt: $symbols, noData: true);
     }
 
     public function testValidNoDataGameName ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(false, null, null, $symbols, true);
+        $this->invalid(gn: $symbols, noData: true);
     }
 
     // invalid tag
@@ -126,52 +128,52 @@ class GameListTest extends TestCase
     public function testInvalidGameTagWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(false, $symbols);
+        $this->invalid(gi: $symbols);
     }
 
     public function testInvalidGameTagEmpty ()
     {
-        $this->invalid(false, '');
+        $this->invalid(gi: '');
     }
 
     public function testInvalidGameTagWithWhiteSpace ()
     {
-        $this->invalid(false, '    ');
+        $this->invalid(gi: '    ');
     }
 
     public function testInvalidGameTagWithLetters ()
     {
         $letters = $this->testhelper->generateUniqueName();
-        $this->invalid(false, $letters);
+        $this->invalid(gi: $letters);
     }
 
     public function testInvalidGameTagBeyondMaxCharacters ()
     {
         $letters = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(false, $letters);
+        $this->invalid(gi: $letters);
     }
 
     // invalid type
 
     public function testInvalidGameTypeEmpty ()
     {
-        $this->invalid(false, null, '');
+        $this->invalid(gt: '');
     }
 
     public function testInvalidGameTypeWithWhiteSpace ()
     {
-        $this->invalid(false, null, '    ');
+        $this->invalid(gt: '    ');
     }
 
     // invalid name
 
     public function testInvalidGameNameEmpty ()
     {
-        $this->invalid(false, null, null, '');
+        $this->invalid(gn: '');
     }
 
     public function testInvalidGameNameWithWhiteSpace ()
     {
-        $this->invalid(false, null, null, '    ');
+        $this->invalid(gn: '    ');
     }
 }

@@ -32,7 +32,6 @@ class WalletBaseClass extends TestCase
         if ($player === null && $tr === null && $tra === null && $timestamp === null){
             if ($this->apiEndpoint === getenv("phpDp")){
                 $GLOBALS['depositTransaction'] = $id;
-
             }
         }
         else if ($player === null && $tr === null && $tra === self::$value[0] && $timestamp === null) {
@@ -51,12 +50,7 @@ class WalletBaseClass extends TestCase
         $signature = $this->generate->signature($data);
         $data["signature"] = $signature;
 
-        return $this->testhelper->callApi(
-            'phpBase',
-            'POST',
-            $this->apiEndpoint,
-            $data,
-            queryParams: []);
+        return $this->testhelper->callApi('phpBase', 'POST', $this->apiEndpoint, $data);
     }
 
     public function valid ($player = null, $tr = null, $tra = null, $timestamp = null)
@@ -95,7 +89,7 @@ class WalletBaseClass extends TestCase
     public function testValidDepositOrWithdraw ()
     {
         if ($this->apiEndpoint === getenv("phpWd")) {
-            $this->valid(null, null, self::$value[0]);
+            $this->valid(tra: self::$value[0]);
         } else {
             $amount = $this->valid();
             self::$value[] = $amount['balance'];
@@ -107,13 +101,13 @@ class WalletBaseClass extends TestCase
     public function testValidNonExistentPlayer ()
     {
         $name = $this->faker->word() . "QATest";
-        $this->invalid($name, null, null, null, true);
+        $this->invalid($name, nonexist: true);
     }
 
     public function testValidNonExistentPlayerNumberOnly ()
     {
         $name = $this->testhelper->generateRandomNumber();
-        $this->invalid(strval(intval($name)), null, null, null, true);
+        $this->invalid(strval(intval($name)), nonexist: true);
     }
 
     // invalid player name 
@@ -150,29 +144,29 @@ class WalletBaseClass extends TestCase
     public function testInvalidTransactionIdWithSymbols () 
     {
         $id = $this->testhelper->randomSymbols();
-        $this->invalid(null, $id);
+        $this->invalid(tr: $id);
     }
 
     public function testInvalidTransactionIdEmpty () 
     {
-        $this->invalid(null, '');
+        $this->invalid(tr: '');
     }
 
     public function testInvalidTransactionIdWithWhiteSpaces ()
     {
-        $this->invalid(null, '     ');
+        $this->invalid(tr: '     ');
     }
 
     public function testInvalidTransactionIdBelowMinimumCharacters ()
     {
         $number = intdiv(time(), 1000);
-        $this->invalid(null, $number);
+        $this->invalid(tr: $number);
     }
 
     public function testInvalidTransactionIdBeyondMaximumCharacters ()
     {
         $timeString = $this->testhelper->generateLongNumbers(97);
-        $this->invalid(null, $timeString);
+        $this->invalid(tr: $timeString);
     }
 
     // invalid transaction amount
@@ -180,28 +174,28 @@ class WalletBaseClass extends TestCase
     public function testInvalidTransactionAmountIdWithSymbols () 
     {
         $id = $this->testhelper->randomSymbols();
-        $this->invalid(null, null, $id);
+        $this->invalid(tra: $id);
     }
 
     public function testInvalidTransactionAmountEmpty () 
     {
-        $this->invalid(null, null, '');
+        $this->invalid(tra: '');
     }
 
     public function testInvalidTransactionAmountWithWhiteSpaces ()
     {
-        $this->invalid(null, null, '     ');
+        $this->invalid(tra: '     ');
     }
 
     public function testInvalidTransactionAmountBelowMinimumAmount ()
     {
-        $this->invalid(null, null, '0');
+        $this->invalid(tra: '0');
     }
 
     public function testInvalidTransactionAmountBeyondMaximumAmount ()
     {
         $timeString = $this->testhelper->generateLongNumbers(35);
-        $this->invalid(null, null, $timeString);
+        $this->invalid(tra: $timeString);
     }
 
     // invalid timestamp
@@ -209,22 +203,22 @@ class WalletBaseClass extends TestCase
     public function testInvalidTimestampWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(null, null,  null, $symbols);
+        $this->invalid(timestamp: $symbols);
     }
 
     public function testInvalidTimestampEmpty ()
     {
-        $this->invalid(null, null, null,  '');
+        $this->invalid(timestamp: '');
     }
 
     public function testInvalidTimestampWhiteSpace ()
     {
-        $this->invalid(null, null, null,  '    ');
+        $this->invalid(timestamp: '    ');
     }
 
     public function testInvalidTimestampWithLetters ()
     {
         $string = $this->testhelper->generateUniqueName();
-        $this->invalid(null, null, null, $string);
+        $this->invalid(timestamp: $string);
     }
 }

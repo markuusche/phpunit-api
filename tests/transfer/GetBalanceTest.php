@@ -21,12 +21,7 @@ class GetBalanceTest extends TestCase
             getenv("yummy") => $playerId
         ];
 
-        return $this->testhelper->callApi(
-            'phpBase',
-            'GET',
-            getenv("GB"), 
-            $data, 
-            queryParams: $queryParams);
+        return $this->testhelper->callApi('phpBase', 'GET', getenv("GB"), $data, queryParams: $queryParams);
     }
 
     public function testValidBalanceFetch ($player = null)
