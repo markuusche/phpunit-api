@@ -2,7 +2,6 @@
 
 use PHPUnit\Framework\TestCase;
 require_once 'utils/TestHelper.php'; 
-require_once 'tests/DataGlobals.php'; 
 
 class GameLimitTest extends TestCase 
 {

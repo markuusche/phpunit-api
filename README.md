@@ -24,6 +24,9 @@ Coverage
    * [POST Deposit]
    * [POST Withdraw]
    * [POST Transaction Check]
+   * [GET Game Limit]
+   * [GET List]
+   * [GET Game URL]
 
 Pre-Requisites
 --------------

@@ -9,6 +9,7 @@
             <file>./tests/urls/GameListTest.php</file>
             <file>./tests/urls/GameLimitTest.php</file>
             <file>./tests/urls/GameUrlTest.php</file>
+            <file>./tests/urls/GameHistoryTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>
