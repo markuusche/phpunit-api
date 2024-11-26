@@ -75,13 +75,14 @@ class GameHistoryTest extends TestCase
             self::$fetch[] = $record[getenv("study")];
             self::$tr[] = $record[getenv("tr")];
             self::$round[] = $record[getenv("grapes")];
-            foreach ($expectedKeys as $keys) {
-                $this->assertArrayHasKey($keys, $record);
-            }
-            $this->assertIsArray($record['secondary_info']);
-            $this->assertIsArray($record['other_info']);
-            $this->assertIsArray($record['remark']);
         }
+
+        foreach ($expectedKeys as $keys) {
+            $this->assertArrayHasKey($keys, $record);
+        }
+        $this->assertIsArray($record['secondary_info']);
+        $this->assertIsArray($record['other_info']);
+        $this->assertIsArray($record['remark']);
     }
 
     public function invalid (
@@ -162,6 +163,17 @@ class GameHistoryTest extends TestCase
         $this->valid(round: $round);
     }
 
+    public function testValidRoundNoDataFound ()
+    {
+        $len = rand(10, 100);
+        $characters = $this->testhelper->generateRandomLetters($len);
+        $numbers = $this->testhelper->generateLongNumbers($len);
+        $values = [$characters, $numbers];
+        $random = array_rand($values);
+        $input = $values[$random];
+        $this->invalid(round: $input, noData: true);
+    }
+
     // invalids
 
     // player
@@ -174,6 +186,30 @@ class GameHistoryTest extends TestCase
     public function testInvalidPlayerWithWhiteSpaces ()
     {
         $this->invalid(player: '     ');
+    }
+
+    // limit
+
+    public function testInvalidLimitEmpty ()
+    {
+        $this->invalid(limit: '');
+    }
+    
+    public function testInvalidLimitWithWhiteSpaces ()
+    {
+        $this->invalid(limit: '     ');
+    }
+
+    public function testInvalidLimitWithSymbols ()
+    {
+        $symbols = $this->testhelper->randomSymbols();
+        $this->invalid(limit: $symbols);
+    }
+
+    public function testInvalidLimitBeyondMaximumCharacters ()
+    {
+        $numbers = $this->testhelper->generateLongNumbers(5);
+        $this->invalid(limit: $numbers);
     }
 
     // gi
