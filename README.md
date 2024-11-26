@@ -27,6 +27,7 @@ Coverage
    * [GET Game Limit]
    * [GET List]
    * [GET Game URL]
+   * [GET Game History]
 
 Pre-Requisites
 --------------
