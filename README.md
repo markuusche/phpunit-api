@@ -28,6 +28,7 @@ Coverage
    * [GET List]
    * [GET Game URL]
    * [GET Game History]
+   * [GET Game Promo]
 
 Pre-Requisites
 --------------
