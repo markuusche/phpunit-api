@@ -53,45 +53,41 @@ class WalletBaseClass extends TestCase
         return $this->testhelper->callApi('phpBase', 'POST', $this->apiEndpoint, $data);
     }
 
-    public function valid ($player = null, $tr = null, $tra = null, $timestamp = null)
+    public function assert ($player = null, $tr = null, $tra = null, $timestamp = null, $valid = false, $nonexist = false)
     {
         $response = $this->responseApi($player, $tr, $tra, $timestamp);
         $body = $response['body'];
         $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
-        $this->assertEquals('S-100', actual: $body['rs_code']);
-        $this->assertEquals('success', actual: $body['rs_message']);
-        $this->assertArrayHasKey('balance', $body);
+        if ($valid) {
+            $this->assertEquals('S-100', actual: $body['rs_code']);
+            $this->assertEquals('success', actual: $body['rs_message']);
+            $this->assertArrayHasKey('balance', $body);
+        }
+        else {
+            if ($nonexist)
+            {
+                $this->assertEquals('S-104', $body['rs_code']);
+                $this->assertEquals('player not available', $body['rs_message']);
+            }
+            else
+            {
+                $this->assertEquals('E-104', $body['rs_code']);
+                $this->assertEquals('invalid parameter or value', $body['rs_message']);
+            }
+        }
+
         return $body;
     }
 
-    public function invalid ($player = null, $tr = null, $tra = null, $timestamp = null, $nonexist = false)
-    {
-        $response = $this->responseApi($player, $tr, $tra, $timestamp);
-        $status = $response['status'];
-        $body = $response['body'];
-        $this->assertIsArray($body);
-        $this->assertEquals(200, actual: $status);
-        if ($nonexist)
-        {
-            $this->assertEquals('S-104', $body['rs_code']);
-            $this->assertEquals('player not available', $body['rs_message']);
-        }
-        else
-        {
-            $this->assertEquals('E-104', $body['rs_code']);
-            $this->assertEquals('invalid parameter or value', $body['rs_message']);
-        }
-    }
-
-    // valid request deposit
+    // valid request deposit & withdraw
 
     public function testValidDepositOrWithdraw ()
     {
         if ($this->apiEndpoint === getenv("phpWd")) {
-            $this->valid(tra: self::$value[0]);
+            $this->assert(valid: true, tra: self::$value[0]);
         } else {
-            $amount = $this->valid();
+            $amount = $this->assert(valid: true);
             self::$value[] = $amount['balance'];
         }
     }
@@ -101,42 +97,42 @@ class WalletBaseClass extends TestCase
     public function testValidNonExistentPlayer ()
     {
         $name = $this->faker->word() . "QATest";
-        $this->invalid($name, nonexist: true);
+        $this->assert($name, nonexist: true);
     }
 
     public function testValidNonExistentPlayerNumberOnly ()
     {
         $name = $this->testhelper->generateRandomNumber();
-        $this->invalid(strval(intval($name)), nonexist: true);
+        $this->assert(strval(intval($name)), nonexist: true);
     }
 
     // invalid player name 
 
     public function testInvalidPlayerIdWhiteSpace ()
     {
-        $this->invalid('        ');
+        $this->assert('        ');
     }
 
     public function testInvalidPlayerIdEmpty()
     {
-        $this->invalid('');
+        $this->assert('');
     }
 
     public function testInvalidPlayerIdWithSymbols ()
     {
         $player = $this->testhelper->randomSymbols();
-        $this->invalid($player);
+        $this->assert($player);
     }
 
     public function testInvalidPlayerIdMinimumCharacters()
     {
         $player = $this->testhelper->generateUUid(2);
-        $this->invalid($player);
+        $this->assert($player);
     }
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(65));
+        $this->assert($this->testhelper->generateAlphaNumString(65));
     }
 
     // invalid transaction id
@@ -144,29 +140,29 @@ class WalletBaseClass extends TestCase
     public function testInvalidTransactionIdWithSymbols () 
     {
         $id = $this->testhelper->randomSymbols();
-        $this->invalid(tr: $id);
+        $this->assert(tr: $id);
     }
 
     public function testInvalidTransactionIdEmpty () 
     {
-        $this->invalid(tr: '');
+        $this->assert(tr: '');
     }
 
     public function testInvalidTransactionIdWithWhiteSpaces ()
     {
-        $this->invalid(tr: '     ');
+        $this->assert(tr: '     ');
     }
 
     public function testInvalidTransactionIdBelowMinimumCharacters ()
     {
         $number = intdiv(time(), 1000);
-        $this->invalid(tr: $number);
+        $this->assert(tr: $number);
     }
 
     public function testInvalidTransactionIdBeyondMaximumCharacters ()
     {
         $timeString = $this->testhelper->generateLongNumbers(97);
-        $this->invalid(tr: $timeString);
+        $this->assert(tr: $timeString);
     }
 
     // invalid transaction amount
@@ -174,28 +170,28 @@ class WalletBaseClass extends TestCase
     public function testInvalidTransactionAmountIdWithSymbols () 
     {
         $id = $this->testhelper->randomSymbols();
-        $this->invalid(tra: $id);
+        $this->assert(tra: $id);
     }
 
     public function testInvalidTransactionAmountEmpty () 
     {
-        $this->invalid(tra: '');
+        $this->assert(tra: '');
     }
 
     public function testInvalidTransactionAmountWithWhiteSpaces ()
     {
-        $this->invalid(tra: '     ');
+        $this->assert(tra: '     ');
     }
 
     public function testInvalidTransactionAmountBelowMinimumAmount ()
     {
-        $this->invalid(tra: '0');
+        $this->assert(tra: '0');
     }
 
     public function testInvalidTransactionAmountBeyondMaximumAmount ()
     {
         $timeString = $this->testhelper->generateLongNumbers(35);
-        $this->invalid(tra: $timeString);
+        $this->assert(tra: $timeString);
     }
 
     // invalid timestamp
@@ -203,22 +199,22 @@ class WalletBaseClass extends TestCase
     public function testInvalidTimestampWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(timestamp: $symbols);
+        $this->assert(timestamp: $symbols);
     }
 
     public function testInvalidTimestampEmpty ()
     {
-        $this->invalid(timestamp: '');
+        $this->assert(timestamp: '');
     }
 
     public function testInvalidTimestampWhiteSpace ()
     {
-        $this->invalid(timestamp: '    ');
+        $this->assert(timestamp: '    ');
     }
 
     public function testInvalidTimestampWithLetters ()
     {
         $string = $this->testhelper->generateUniqueName();
-        $this->invalid(timestamp: $string);
+        $this->assert(timestamp: $string);
     }
 }

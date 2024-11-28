@@ -15,79 +15,78 @@ class GetBalanceTest extends TestCase
         $this->faker = $this->testhelper->getFaker();
     }
 
-    public function responseApi ($playerId=[], $data=[])
+    public function responseApi ($player = null)
     {
         $queryParams = [
-            getenv("yummy") => $playerId
+            getenv("yummy") => $player ?? getenv('phpId')
         ];
 
-        return $this->testhelper->callApi('phpBase', 'GET', getenv("GB"), $data, queryParams: $queryParams);
+        return $this->testhelper->callApi('phpBase', 'GET', getenv("GB"), queryParams: $queryParams);
     }
 
-    public function testValidBalanceFetch ($player = null)
+    public function assert ($player = null, $valid = false, $nonexist = false) 
     {
-        $data = $player ?? getenv('phpId');
-        $response = $this->responseApi($data);
+        $response = $this->responseApi($player);
         $status = $response['status'];
         $body = $response['body'];
         $this->assertIsArray($body);
         $this->assertEquals(200, actual: $status);
-        $this->assertEquals('S-100', $body['rs_code']);
-        $this->assertEquals('success', $body['rs_message']);
-        $this->assertEquals(getenv('phpId'), $body[getenv("yummy")]);
-        $this->assertArrayHasKey('current_balance', $body);
+        if ($valid) {
+            $this->assertEquals('S-100', $body['rs_code']);
+            $this->assertEquals('success', $body['rs_message']);
+            $this->assertEquals(getenv('phpId'), $body[getenv("yummy")]);
+            $this->assertArrayHasKey('current_balance', $body);
+        }
+        else {
+            if ($nonexist) {
+                $this->assertEquals('S-104', $body['rs_code']);
+                $this->assertEquals('player not available', $body['rs_message']);
+            }
+            else {
+                $this->assertEquals('E-104', $body['rs_code']);
+                $this->assertEquals('invalid parameter or value', $body['rs_message']);
+            }
+        }
     }
 
-    public function invalid ($value = null, $nonexist = false)
+    // valids
+
+    public function testValidBalanceFetch()
     {
-        $randomName = $value ?? 'invalid@@' . $this->faker->userName() . '!!test_qa$$';
-        $response = $this->responseApi($randomName);
-        $status = $response['status'];
-        $body = $response['body'];
-        $this->assertIsArray($body);
-        $this->assertEquals(200, actual: $status);
-        if ($nonexist)
-        {
-            $this->assertEquals('S-104', $body['rs_code']);
-            $this->assertEquals('player not available', $body['rs_message']);
-        }
-        else
-        {
-            $this->assertEquals('E-104', $body['rs_code']);
-            $this->assertEquals('invalid parameter or value', $body['rs_message']);
-        }
+        $this->assert(valid: true);
     }
 
     public function testValidNonExistentUser()
     {
         $name = $this->faker->word() . "QATest";
-        $this->invalid($name, true);
+        $this->assert(player: $name, nonexist: true);
     }
 
     // invalid player name
 
     public function testInvalidPlayerId ()
     {
-        $this->invalid();
+        $name = $this->testhelper->randomSymbols();
+        $this->assert(player: $name);
     }
 
     public function testInvalidPlayerIdWhiteSpace ()
     {
-        $this->invalid('        ');
+        $this->assert(player: '        ');
     }
 
     public function testInvalidPlayerIdEmpty()
     {
-        $this->invalid('');
+        $this->assert(player: '');
     }
 
     public function testInvalidPlayerIdWithSymbols ()
     {
-        $this->invalid($this->testhelper->randomSymbols());
+        $this->assert(player: $this->testhelper->randomSymbols());
     }
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(65));
+        $this->assert(player: $this->testhelper->generateAlphaNumString(65));
     }
 }

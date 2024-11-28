@@ -1,6 +1,5 @@
 <?php
 
-use Faker\Factory;
 use PHPUnit\Framework\TestCase;
 require_once 'utils/TestHelper.php';
 
@@ -26,20 +25,15 @@ class RegisterTest extends TestCase
         return $this->testhelper->callApi('phpBase', 'POST', getenv("RG"), $data);
     }
 
-    public function valid ($player = null, $nickname = null, $timestamp = null, $exist = false)
+    public function assert ($player = null, $nickname = null, $timestamp = null, $valid = false, $exist = false)
     {
         $response = $this->responseApi($player, $nickname, $timestamp);
         $status = $response['status'];
         $body = $response['body'];
         $this->assertIsArray($body);
         $this->assertEquals(200, $status);
-        if ($exist)
-        {
-            $this->assertEquals('S-121', $body['rs_code']);
-            $this->assertEquals('player already exists', $body['rs_message']);
-        }
-        else
-        {
+
+        if ($valid) {
             try {
                 $this->assertEquals('S-100', $body['rs_code']);
                 $this->assertEquals('success', $body['rs_message']);
@@ -49,43 +43,38 @@ class RegisterTest extends TestCase
                 $this->assertEquals('S-121', $body['rs_code']);
                 $this->assertEquals('player already exists', $body['rs_message']);
              }
+        } else if ($exist) {
+            $this->assertEquals('S-121', $body['rs_code']);
+            $this->assertEquals('player already exists', $body['rs_message']);
+        } else {
+            $this->assertEquals('E-104', $body['rs_code']);
+            $this->assertEquals('invalid parameter or value', $body['rs_message']);
         }
-    }
-    
-    public function invalid ($player = null, $nickname = null, $timestamp = null)
-    {
-        $response = $this->responseApi($player, $nickname, $timestamp);
-        $status = $response['status'];
-        $body = $response['body'];
-        $this->assertIsArray($body);
-        $this->assertEquals(200, actual: $status);
-        $this->assertEquals('E-104', $body['rs_code']);
-        $this->assertEquals('invalid parameter or value', $body['rs_message']);
     }
 
     // valid player name test cases
 
     public function testValidRegistration()
     {
-        $this->valid();
+        $this->assert(valid: true);
     }
 
     public function testValidPlayerIdExistence()
     {
-        $this->valid(getenv("phpId"), exist: true);
+        $this->assert(getenv("phpId"), valid: true, exist: true);
     }
 
     public function testValidPlayerIdMinimumCharacters()
     {
         $player = $this->testhelper->generateUUid(3);
-        $this->valid($player);
+        $this->assert($player, valid: true);
     }
 
     public function testValidPlayerIdMaximumCharacters ()
     {
         $words = $this->testhelper->generateAlphaNumString(60);
         $player = $this->testhelper->generateUUid() . $words;
-        $this->valid($player);
+        $this->assert($player, valid: true);
     }
 
     // valid nickname test cases
@@ -93,26 +82,26 @@ class RegisterTest extends TestCase
     public function testValidNicknameMinimumCharacters ()
     {
         $characters = $this->testhelper->generateUUid(8);
-        $this->valid(nickname: $characters);
+        $this->assert(nickname: $characters, valid: true);
     }
 
     public function testValidNicknameMaximumCharacters ()
     {
         $characters = $this->testhelper->generateAlphaNumString(64);
-        $this->valid(nickname: $characters);
+        $this->assert(nickname: $characters, valid: true);
     }
 
     // valid timestamp test cases
 
     public function testValidTimestamp ()
     {
-        $this->valid(timestamp: time());
+        $this->assert(timestamp: time(), valid: true);
     }
 
     public function testValidTimestampSingleDigit ()
     {
         $random = rand(1, 9);
-        $this->valid(timestamp: $random);
+        $this->assert(timestamp: $random, valid: true);
     }
 
     // invalid player name test cases
@@ -120,29 +109,29 @@ class RegisterTest extends TestCase
     public function testInvalidPlayerIdWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid($symbols);
+        $this->assert($symbols);
     }
 
     public function testInvalidPlayerIdEmpty ()
     {
-        $this->invalid('');
+        $this->assert('');
     }
 
     public function testInvalidPlayerIdWhiteSpace ()
     {
-        $this->invalid('  ');
+        $this->assert('  ');
     }
 
     public function testInvalidPlayerIdBelowMinimumCharacters ()
     {
         $player = $this->testhelper->generateUUid(2);
-        $this->invalid($player);
+        $this->assert($player);
     }
 
     public function testInvalidPlayerIdBeyondMaximumCharacters ()
     {
         $words = $this->testhelper->generateAlphaNumString(65);
-        $this->invalid($words);
+        $this->assert($words);
     }
 
     // invalid nickname test cases
@@ -150,29 +139,29 @@ class RegisterTest extends TestCase
     public function testInvalidNicknameWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(nickname: $symbols);
+        $this->assert(nickname: $symbols);
     }
 
     public function testInvalidNicknameEmpty ()
     {
-        $this->invalid(nickname: '');
+        $this->assert(nickname: '');
     }
 
     public function testInvalidNicknameWhiteSpace ()
     {
-        $this->invalid(nickname: '  ');
+        $this->assert(nickname: '   ');
     }
 
     public function testInvalidNicknameBelowMinimumCharacters ()
     {
         $name = $this->testhelper->generateUUid(7);
-        $this->invalid(nickname: $name);
+        $this->assert(nickname: $name);
     }
 
     public function testInvalidNicknameBeyondMaximumCharacters ()
     {
         $characters = $this->testhelper->generateAlphaNumString(65);
-        $this->invalid($characters);
+        $this->assert($characters);
     }
 
     // invalid timestamp test cases
@@ -180,22 +169,22 @@ class RegisterTest extends TestCase
     public function testInvalidTimestampWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(timestamp: $symbols);
+        $this->assert(timestamp: $symbols);
     }
 
     public function testInvalidTimestampEmpty ()
     {
-        $this->invalid(timestamp:  '');
+        $this->assert(timestamp:  '');
     }
 
     public function testInvalidTimestampWhiteSpace ()
     {
-        $this->invalid(timestamp: '    ');
+        $this->assert(timestamp: '   ');
     }
 
     public function testInvalidTimestampWithLetters ()
     {
         $string = $this->testhelper->generateUniqueName();
-        $this->invalid(timestamp: $string);
+        $this->assert(timestamp: $string);
     }
 }

@@ -22,70 +22,65 @@ class TransferCheckTest extends TestCase
         return $this->testhelper->callApi('phpBase', 'POST', getenv("TC"), $data);
     }
 
-    public function valid ($transaction)
+    public function assert ($transaction, $valid = false, $nonExistent = false)
     {
         $response = $this->responseApi($transaction);
         $body = $response['body'];
         $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
-        $this->assertEquals('S-100', actual: $body['rs_code']);
-        $this->assertEquals('success', actual: $body['rs_message']);
-    }
-
-    public function invalid ($transaction, $nonExistent = false)
-    {
-        $response = $this->responseApi($transaction);
-        $body = $response['body'];
-        $this->assertIsArray($body);
-        $this->assertEquals(200, actual: $response['status']);
-        if ($nonExistent){
-            $this->assertEquals('S-119', actual: $body['rs_code']);
-            $this->assertEquals('transaction is not existed', actual: $body['rs_message']);
-        }
-        else {
-            $this->assertEquals('E-104', actual: $body['rs_code']);
-            $this->assertEquals('invalid parameter or value', actual: $body['rs_message']);
+        if ($valid) {
+            $this->assertEquals('S-100', actual: $body['rs_code']);
+            $this->assertEquals('success', actual: $body['rs_message']);
+        } else {
+            if ($nonExistent){
+                $this->assertEquals('S-119', actual: $body['rs_code']);
+                $this->assertEquals('transaction is not existed', actual: $body['rs_message']);
+            }
+            else {
+                $this->assertEquals('E-104', actual: $body['rs_code']);
+                $this->assertEquals('invalid parameter or value', actual: $body['rs_message']);
+            }
         }
     }
 
     public function testValidDepositTransaction ()
     {
-        $this->valid($GLOBALS['depositTransaction']);
+        $this->assert($GLOBALS['depositTransaction'], valid: true);
     }
     public function testValidWithdrawTransaction ()
     {
-        $this->valid($GLOBALS['withdrawTransaction']);
+        $this->assert($GLOBALS['withdrawTransaction'], valid: true);
     }
 
     public function testValidNonExistentTransaction ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(96), true);
+        $this->assert($this->testhelper->generateAlphaNumString(96), nonExistent: true);
     }
 
     public function testInvalidTransactionWithWhiteSpace ()
     {
-        $this->invalid('        ');
+        $this->assert('        ');
     }
 
     public function testInvalidTransactionWithEmpty ()
     {
-        $this->invalid('');
+        $this->assert('');
     }
 
     public function testInvalidTransactionWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid($symbols);
+        $this->assert($symbols);
     }
 
     public function testInvalidTransactionBelowMinimumCharacters ()
     {
         $data = $this->testhelper->generateUUid(7);
-        $this->invalid($data);
+        $this->assert($data);
     }
 
     public function testInvalidTransactionBeyondMinimumCharacters ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(97));
+        $this->assert($this->testhelper->generateAlphaNumString(97));
     }
 }

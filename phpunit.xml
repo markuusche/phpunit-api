@@ -11,6 +11,7 @@
             <file>./tests/urls/GameUrlTest.php</file>
             <file>./tests/urls/GameHistoryTest.php</file>
             <file>./tests/urls/GamePromoTest.php</file>
+            <file>./tests/urls/GameTransferTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

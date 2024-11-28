@@ -39,15 +39,16 @@ class GameHistoryTest extends TestCase
         return $this->testhelper->callApi('phpBase', 'GET', getenv("phpth"), queryParams: $noQuery ? null : (empty($params) ? null : $params));
     }
 
-    public function valid (
+    public function assert (
     $noQuery = false, 
     $player = null, 
     $id = null, 
     $limit = null,
     $fetch = null,
     $tr = null,
-    $round = null
-    )
+    $round = null,
+    $valid = false,
+    $noData = false)
     {
         $response = $this->responseApi(
             $noQuery, 
@@ -61,52 +62,31 @@ class GameHistoryTest extends TestCase
         $body = $response['body'];
         $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
-        $this->assertEquals('S-100', actual: $body['rs_code']);
-        $this->assertEquals('success', actual: $body['rs_message']);
-        $this->assertArrayHasKey('last_' . getenv("study"), $body);
-        $this->assertArrayHasKey('records', $body);
-
-        $keysArray = getenv('expected_keys');
-        $expectedKeys = explode(' ', $keysArray);
-
-        foreach ($body['records'] as $record) {
-            $this->assertIsArray($record);
-            self::$gi[] = $record[getenv("phpgI")];
-            self::$fetch[] = $record[getenv("study")];
-            self::$tr[] = $record[getenv("tr")];
-            self::$round[] = $record[getenv("grapes")];
-        }
-
-        foreach ($expectedKeys as $keys) {
-            $this->assertArrayHasKey($keys, $record);
-        }
-        $this->assertIsArray($record['secondary_info']);
-        $this->assertIsArray($record['other_info']);
-        $this->assertIsArray($record['remark']);
-    }
-
-    public function invalid (
-        $noQuery = false, 
-        $player = null, 
-        $id = null, 
-        $limit = null,
-        $fetch = null,
-        $tr = null,
-        $round = null,
-        $noData = false)
-        {
-            $response = $this->responseApi(
-                $noQuery, 
-                $player, 
-                $id, 
-                $limit,
-                $fetch,
-                $tr,
-                $round
-            );
-            $body = $response['body'];
-            $this->assertIsArray($body);
-            $this->assertEquals(200, actual: $response['status']);
+        if ($valid) {
+            $this->assertEquals('S-100', actual: $body['rs_code']);
+            $this->assertEquals('success', actual: $body['rs_message']);
+            $this->assertArrayHasKey('last_' . getenv("study"), $body);
+            $this->assertIsArray($body['records']);
+            $this->assertArrayHasKey('records', $body);
+    
+            $keysArray = getenv('expected_keys');
+            $expectedKeys = explode(' ', $keysArray);
+    
+            foreach ($body['records'] as $record) {
+                $this->assertIsArray($record);
+                self::$gi[] = $record[getenv("phpgI")];
+                self::$fetch[] = $record[getenv("study")];
+                self::$tr[] = $record[getenv("tr")];
+                self::$round[] = $record[getenv("grapes")];
+            }
+    
+            foreach ($expectedKeys as $keys) {
+                $this->assertArrayHasKey($keys, $record);
+            }
+            $this->assertIsArray($record['secondary_info']);
+            $this->assertIsArray($record['other_info']);
+            $this->assertIsArray($record['remark']);
+        } else {
             if ($noData) {
                 $this->assertEquals('S-115', actual: $body['rs_code']);
                 $this->assertEquals('no data found', actual: $body['rs_message']);
@@ -115,35 +95,37 @@ class GameHistoryTest extends TestCase
                 $this->assertEquals('invalid parameter or value', actual: $body['rs_message']);
             }
         }
+    
+    }
 
     // valids
 
     public function testValidGameHistory ()
     {
-        $this->valid();
+        $this->assert(valid: true);
     }
 
     public function testValidPlayer ()
     {
-        $this->valid(player: getenv("phpId"));
+        $this->assert(player: getenv("phpId"), valid: true);
     }
 
     public function testValidGi ()
     {
         $gi = $this->testhelper->randomArrayChoice(self::$gi);
-        $this->valid(id: $gi);
+        $this->assert(id: $gi, valid: true);
     }
 
     public function testValidFetch ()
     {
         $fetch = $this->testhelper->randomArrayChoice(self::$fetch);
-        $this->valid(fetch: $fetch);
+        $this->assert(fetch: $fetch, valid: true);
     }
 
     public function testValidTr ()
     {
         $tr = $this->testhelper->randomArrayChoice(self::$tr);
-        $this->valid(tr: $tr);
+        $this->assert(tr: $tr, valid: true);
     }
 
     public function testValidTrNoDataFound ()
@@ -154,13 +136,13 @@ class GameHistoryTest extends TestCase
         $values = [$characters, $numbers];
         $random = array_rand($values);
         $input = $values[$random];
-        $this->invalid(tr: $input, noData: true);
+        $this->assert(tr: $input, noData: true);
     }
 
     public function testValidRound ()
     {
         $round = $this->testhelper->randomArrayChoice(self::$round);
-        $this->valid(round: $round);
+        $this->assert(round: $round, valid: true);
     }
 
     public function testValidRoundNoDataFound ()
@@ -171,7 +153,7 @@ class GameHistoryTest extends TestCase
         $values = [$characters, $numbers];
         $random = array_rand($values);
         $input = $values[$random];
-        $this->invalid(round: $input, noData: true);
+        $this->assert(round: $input, noData: true);
     }
 
     // invalids
@@ -180,113 +162,113 @@ class GameHistoryTest extends TestCase
 
     public function testInvalidPlayerEmpty ()
     {
-        $this->invalid(player: '');
+        $this->assert(player: '');
     }
     
     public function testInvalidPlayerWithWhiteSpaces ()
     {
-        $this->invalid(player: '     ');
+        $this->assert(player: '     ');
     }
 
     // limit
 
     public function testInvalidLimitEmpty ()
     {
-        $this->invalid(limit: '');
+        $this->assert(limit: '');
     }
     
     public function testInvalidLimitWithWhiteSpaces ()
     {
-        $this->invalid(limit: '     ');
+        $this->assert(limit: '     ');
     }
 
     public function testInvalidLimitWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(limit: $symbols);
+        $this->assert(limit: $symbols);
     }
 
     public function testInvalidLimitBeyondMaximumCharacters ()
     {
         $numbers = $this->testhelper->generateLongNumbers(5);
-        $this->invalid(limit: $numbers);
+        $this->assert(limit: $numbers);
     }
 
     // gi
 
-    public function testinvalidGiEmpty ()
+    public function testInvalidGiEmpty ()
     {
-        $this->invalid(id: '');
+        $this->assert(id: '');
     }
 
-    public function testinvalidGiWithWhiteSpaces ()
+    public function testInvalidGiWithWhiteSpaces ()
     {
-        $this->invalid(id: '   ');
+        $this->assert(id: '   ');
     }
 
-    public function testinvalidGiWithSymbols ()
+    public function testInvalidGiWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(id: $symbols);
+        $this->assert(id: $symbols);
     }
 
-    public function testinvalidGiBeyondMaximumCharacters ()
+    public function testInvalidGiBeyondMaximumCharacters ()
     {
         $numbers = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(id: $numbers);
+        $this->assert(id: $numbers);
     }
 
     // fetch
 
-    public function testinvalidFetchEmpty ()
+    public function testInvalidFetchEmpty ()
     {
-        $this->invalid(fetch: '');
+        $this->assert(fetch: '');
     }
 
-    public function testinvalidFetchWithWhiteSpaces ()
+    public function testInvalidFetchWithWhiteSpaces ()
     {
-        $this->invalid(fetch: '     ');
+        $this->assert(fetch: '     ');
     }
 
-    public function testinvalidFetchWithSymbols ()
+    public function testInvalidFetchWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(fetch: $symbols);
+        $this->assert(fetch: $symbols);
     }
 
-    public function testinvalidFetchBeyondMaximumCharacters ()
+    public function testInvalidFetchBeyondMaximumCharacters ()
     {
         $numbers = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(fetch: $numbers);
+        $this->assert(fetch: $numbers);
     }
 
     // tr
 
-    public function testinvalidTrEmpty ()
+    public function testInvalidTrEmpty ()
     {
-        $this->invalid(tr: '');
+        $this->assert(tr: '');
     }
 
-    public function testinvalidTrWithWhiteSpaces ()
+    public function testInvalidTrWithWhiteSpaces ()
     {
-        $this->invalid(tr: '    ');
+        $this->assert(tr: '    ');
     }
 
-    public function testinvalidTrWithSymbols ()
+    public function testInvalidTrWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(tr: $symbols);
+        $this->assert(tr: $symbols);
     }
 
     // round
 
-    public function testinvalidRoundEmpty ()
+    public function testInvalidRoundEmpty ()
     {
-        $this->invalid(round: '');
+        $this->assert(round: '');
     }
 
-    public function testinvalidRoundWithWhiteSpaces ()
+    public function testInvalidRoundWithWhiteSpaces ()
     {
-        $this->invalid(round: '    ');
+        $this->assert(round: '    ');
     }
 }

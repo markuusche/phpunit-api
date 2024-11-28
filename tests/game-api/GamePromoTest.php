@@ -39,47 +39,7 @@ class GamePromoTest extends TestCase
         return $this->testhelper->callApi('phpBase', 'GET', getenv("phptpH"), queryParams: $noQuery ? null : (empty($params) ? null : $params));
     }
 
-    public function valid (
-        $noQuery = false,
-        $player = null,
-        $limit = null, 
-        $tr = null,
-        $claim = null,
-        $claimAt = null,
-        $promotAt = null)
-    {
-        $response = $this->responseApi(
-            $noQuery, 
-            $player, 
-            $limit, 
-            $tr,
-            $claim,
-            $claimAt,
-            $promotAt
-        );
-        $body = $response['body'];
-        $this->assertIsArray($body); 
-        $this->assertEquals(200, actual: $response['status']);
-        $this->assertEquals('S-100', actual: $body['rs_code']);
-        $this->assertEquals('success', actual: $body['rs_message']);
-        $this->assertArrayHasKey('records', $body);
-
-        $promoArray = getenv('prh');
-        $expectedKeys = explode(' ', $promoArray);
-
-        foreach ($body['records'] as $record) {
-            $this->assertIsArray($record);
-            self::$tr[] = $record[getenv("tr")];
-            self::$created[] = $record[getenv("clA")];
-            self::$updated[] = $record[getenv("upt")];
-        }
-        
-        foreach ($expectedKeys as $keys) {
-            $this->assertArrayHasKey($keys, $record);
-        }
-    }
-
-    public function invalid (
+    public function assert (
         $noQuery = false,
         $player = null,
         $limit = null, 
@@ -87,6 +47,7 @@ class GamePromoTest extends TestCase
         $claim = null,
         $claimAt = null,
         $promoAt = null,
+        $valid = false,
         $noData = false)
     {
         $response = $this->responseApi(
@@ -101,21 +62,44 @@ class GamePromoTest extends TestCase
         $body = $response['body'];
         $this->assertIsArray($body); 
         $this->assertEquals(200, actual: $response['status']);
-        if ($noData) {
-            try {
-                $this->assertEquals('S-115', actual: $body['rs_code']);
-                $this->assertEquals('no data found', actual: $body['rs_message']);
-            } catch (Exception) {
-                $this->assertEquals('S-100', actual: $body['rs_code']);
-                $this->assertEquals('success', actual: $body['rs_message']);
 
-                foreach ($body['records'] as $record) {
-                    $this->assertEquals('', $record[getenv("cA")]);
-                }
+        if ($valid) {
+            $this->assertEquals('S-100', actual: $body['rs_code']);
+            $this->assertEquals('success', actual: $body['rs_message']);
+            $this->assertIsArray($body['records']);
+            $this->assertArrayHasKey('records', $body);
+    
+            $promoArray = getenv('prh');
+            $expectedKeys = explode(' ', $promoArray);
+    
+            foreach ($body['records'] as $record) {
+                $this->assertIsArray($record);
+                self::$tr[] = $record[getenv("tr")];
+                self::$created[] = $record[getenv("clA")];
+                self::$updated[] = $record[getenv("upt")];
             }
-        } else {
-            $this->assertEquals('E-104', actual: $body['rs_code']);
-            $this->assertEquals('invalid parameter or value', actual: $body['rs_message']);
+            
+            foreach ($expectedKeys as $keys) {
+                $this->assertArrayHasKey($keys, $record);
+            }
+        }
+        else {
+            if ($noData) {
+                try {
+                    $this->assertEquals('S-115', actual: $body['rs_code']);
+                    $this->assertEquals('no data found', actual: $body['rs_message']);
+                } catch (Exception) {
+                    $this->assertEquals('S-100', actual: $body['rs_code']);
+                    $this->assertEquals('success', actual: $body['rs_message']);
+    
+                    foreach ($body['records'] as $record) {
+                        $this->assertEquals('', $record[getenv("cA")]);
+                    }
+                }
+            } else {
+                $this->assertEquals('E-104', actual: $body['rs_code']);
+                $this->assertEquals('invalid parameter or value', actual: $body['rs_message']);
+            }
         }
     }
 
@@ -123,13 +107,13 @@ class GamePromoTest extends TestCase
 
     public function testValidPromo ()
     {
-        $this->valid();
+        $this->assert(valid: true);
     }
 
     public function testValidTr ()
     {
         $tr = $this->testhelper->randomArrayChoice(self::$tr);
-        $this->valid(tr: $tr);
+        $this->assert(tr: $tr, valid: true);
     }
 
     public function testValidTrNoData ()
@@ -140,7 +124,7 @@ class GamePromoTest extends TestCase
         $values = [$characters, $numbers];
         $random = array_rand($values);
         $input = $values[$random];
-        $this->invalid(tr: $input, noData: true);
+        $this->assert(tr: $input, noData: true);
     }
 
     public function testValidPlayerNoData ()
@@ -151,26 +135,26 @@ class GamePromoTest extends TestCase
         $values = [$characters, $numbers];
         $random = array_rand($values);
         $input = $values[$random];
-        $this->invalid(player: $input, noData: true);
+        $this->assert(player: $input, noData: true);
     }
 
     public function testValidCreatedAt ()
     {
         $claimAt = $this->testhelper->randomArrayChoice(self::$created);
         $date = explode(' ', $claimAt)[0];
-        $this->valid(claimAt: $date);
+        $this->assert(claimAt: $date, valid: true);
     }
 
     public function testValidUpdatedAt ()
     {
         $updated = $this->testhelper->randomArrayChoice(self::$updated);
         $date = explode(' ', $updated)[0];
-        $this->valid(claimAt: $date);
+        $this->assert(claimAt: $date, valid: true);
     }
 
     public function testValidClaimNoData ()
     {
-        $this->invalid(claim: 'false', noData: true);
+        $this->assert(claim: 'false', noData: true);
     }
 
 
@@ -180,119 +164,119 @@ class GamePromoTest extends TestCase
 
     public function testInvalidPlayerEmpty ()
     {
-        $this->invalid(player: '');
+        $this->assert(player: '');
     }
     
     public function testInvalidPlayerWithWhiteSpaces ()
     {
-        $this->invalid(player: '     ');
+        $this->assert(player: '     ');
     }
 
     // limit
 
     public function testInvalidLimitEmpty ()
     {
-        $this->invalid(limit: '');
+        $this->assert(limit: '');
     }
     
     public function testInvalidLimitWithWhiteSpaces ()
     {
-        $this->invalid(limit: '     ');
+        $this->assert(limit: '     ');
     }
 
     public function testInvalidLimitWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(limit: $symbols);
+        $this->assert(limit: $symbols);
     }
 
     public function testInvalidLimitBeyondMaximumCharacters ()
     {
         $numbers = $this->testhelper->generateLongNumbers(5);
-        $this->invalid(limit: $numbers);
+        $this->assert(limit: $numbers);
     }
 
     // tr
 
     public function testInvalidTrEmpty ()
     {
-        $this->invalid(tr: '');
+        $this->assert(tr: '');
     }
     
     public function testInvalidTrWithWhiteSpaces ()
     {
-        $this->invalid(tr: '     ');
+        $this->assert(tr: '     ');
     }
 
     // claim at
 
     public function testInvalidClaimAtEmpty ()
     {
-        $this->invalid(claimAt: '');
+        $this->assert(claimAt: '');
     }
     
     public function testInvalidClaimAtWithWhiteSpaces ()
     {
-        $this->invalid(claimAt: '     ');
+        $this->assert(claimAt: '     ');
     }
 
     public function testInvalidClaimAtWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(claimAt: $symbols);
+        $this->assert(claimAt: $symbols);
     }
 
     public function testInvalidClaimAtWithNumbers ()
     {
         $numbers = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(claimAt: $numbers);
+        $this->assert(claimAt: '');
     }
 
     // promo at
 
     public function testInvalidPromoAtEmpty ()
     {
-        $this->invalid(promoAt: '');
+        $this->assert(promoAt: '');
     }
     
     public function testInvalidPromomAtWithWhiteSpaces ()
     {
-        $this->invalid(promoAt: '     ');
+        $this->assert(promoAt: '     ');
     }
 
     public function testInvalidPromoAtWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(promoAt: $symbols);
+        $this->assert(promoAt: $symbols);
     }
 
     public function testInvalidPromoAtWithNumbers ()
     {
         $numbers = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(promoAt: $numbers);
+        $this->assert(promoAt: $numbers);
     }
 
     // claim
 
     public function testInvalidClaimEmpty ()
     {
-        $this->invalid(claim: '');
+        $this->assert(claim: '');
     }
     
     public function testInvalidClaimWithWhiteSpaces ()
     {
-        $this->invalid(claim: '     ');
+        $this->assert(claim: '     ');
     }
 
     public function testInvalidClaimWithSymbols ()
     {
         $symbols = $this->testhelper->randomSymbols();
-        $this->invalid(claim: $symbols);
+        $this->assert(claim: $symbols);
     }
 
     public function testInvalidClaimWithNumbers ()
     {
         $numbers = $this->testhelper->generateLongNumbers(20);
-        $this->invalid(claim: $numbers);
+        $this->assert(claim: $numbers);
     }
 }

@@ -41,14 +41,16 @@ class GameUrlTest extends TestCase
         return $this->testhelper->callApi('phpBase', 'GET', getenv("phpGL"), queryParams: $data);
     }
 
-    public function valid (
+    public function assert (
     $player = null, 
     $nickname = null, 
     $lang = null, 
     $tk = null,
     $gi = null,
     $limit = null,
-    $timestamp = null
+    $timestamp = null,
+    $valid = false,
+    $nonexistent = false
     )
     {
         $response = $this->responseApi(
@@ -63,33 +65,12 @@ class GameUrlTest extends TestCase
         $body = $response['body'];
         $this->assertIsArray($body);
         $this->assertEquals(200, actual: $response['status']);
-        $this->assertEquals('S-100', actual: $body['rs_code']);
-        $this->assertEquals('success', actual: $body['rs_message']);
-        $this->assertTrue(filter_var($body[getenv("phpURL")], FILTER_VALIDATE_URL) !== false);
-    }
 
-    public function invalid (
-        $player = null, 
-        $nickname = null, 
-        $lang = null, 
-        $tk = null,
-        $gi = null,
-        $limit = null,
-        $timestamp = null,
-        $nonexistent = false) 
-        {
-            $response = $this->responseApi(
-                $player, 
-                $nickname, 
-                $lang, 
-                $tk,
-                $gi,
-                $limit,
-                $timestamp
-            );
-            $body = $response['body'];
-            $this->assertIsArray($body);
-            $this->assertEquals(200, actual: $response['status']);
+        if ($valid) {
+            $this->assertEquals('success', actual: $body['rs_message']);
+            $this->assertTrue(filter_var($body[getenv("phpURL")], FILTER_VALIDATE_URL) !== false);
+        }
+        else {
             if ($nonexistent) {
                 try {
                     $this->assertEquals('S-104', actual: $body['rs_code']);
@@ -107,39 +88,46 @@ class GameUrlTest extends TestCase
             }
         }
 
+    }
+
     // valid test
 
     public function testValidGameUrl()
     {
-        $this->valid();
+        $this->assert(valid: true);
     }
 
     // player 
     public function testValidNonAvailablePlayer ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(6), nonexistent: true);
+        $player = $this->testhelper->generateAlphaNumString(6);
+        $this->assert(player: $player, nonexistent: true);
     }
 
     public function testValidPlayerMinimumCharacters ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(3), nonexistent: true);
+        $player = $this->testhelper->generateAlphaNumString(3);
+        $this->assert(player: $player, nonexistent: true);
     }
 
     public function testValidPlayerMaximumCharacters ()
     {
-        $this->invalid($this->testhelper->generateAlphaNumString(64), nonexistent: true);
+        $player = $this->testhelper->generateAlphaNumString(64);
+        $this->assert(player: $player, nonexistent: true);
     }
 
     //  nickname
 
     public function testValidNicknameMinimumCharacters ()
     {
-        $this->valid(nickname: $this->testhelper->generateAlphaNumString(8));
+        $nickname = $this->testhelper->generateAlphaNumString(8);
+        $this->assert(nickname: $nickname, valid: true);
     }
 
     public function testValidNicknameMaximumCharacters ()
     {
-        $this->valid(nickname: $this->testhelper->generateAlphaNumString(64));
+        $nickname = $this->testhelper->generateAlphaNumString(64);
+        $this->assert(nickname: $nickname, valid: true);
     }
 
     // limit
@@ -147,7 +135,7 @@ class GameUrlTest extends TestCase
     public function testValidLimit ()
     {
         $limit = $this->testhelper->randomArrayChoice($GLOBALS['limit']);
-        $this->valid(limit: $limit);
+        $this->assert(limit: $limit, valid: true);
     }
 
     // invalid test
@@ -155,127 +143,127 @@ class GameUrlTest extends TestCase
 
     public function testInvalidPlayerWithSymbols ()
     {
-        $this->invalid($this->testhelper->randomSymbols());
+        $this->assert(player: $this->testhelper->randomSymbols());
     }
 
     public function testInvalidPlayerEmpty ()
     {
-        $this->invalid('');
+        $this->assert('');
     }
     
     public function testInvalidPlayerWithWhiteSpaces ()
     {
-        $this->invalid('   ');
+        $this->assert('   ');
     }
 
     public function testInvalidPlayerBelowMinimumCharacter ()
     {
         $player = $this->testhelper->generateUUid(2);
-        $this->invalid($player);
+        $this->assert(player: $player);
     }
 
     public function testInvalidPlayerBeyondMaximumCharacter ()
     {
         $string = $this->testhelper->generateAlphaNumString(65);
-        $this->invalid($string);
+        $this->assert(player: $string);
     }
 
     // nickname
     
     public function testInvalidNicknameWithSymbols ()
     {
-        $this->invalid(nickname: $this->testhelper->randomSymbols());
+        $this->assert(nickname: $this->testhelper->randomSymbols());
     }
 
     public function testInvalidNicknameEmpty ()
     {
-        $this->invalid(nickname: '');
+        $this->assert(nickname: '');
     }
     
     public function testInvalidNicknameWithWhiteSpaces ()
     {
-        $this->invalid(nickname: '   ');
+        $this->assert(nickname: '   ');
     }
 
     public function testInvalidNicknameBelowMinimumCharacter ()
     {
         $player = $this->testhelper->generateUUid(7);
-        $this->invalid(nickname: $player);
+        $this->assert(nickname: $player);
     }
 
     public function testInvalidNicknameBeyondMaximumCharacter ()
     {
         $string = $this->testhelper->generateAlphaNumString(65);
-        $this->invalid(nickname: $string);
+        $this->assert(nickname: $string);
     }
 
     // lang
 
     public function testInvalidLangWithSymbols ()
     {
-        $this->invalid(lang: $this->testhelper->randomSymbols());
+        $this->assert(lang: $this->testhelper->randomSymbols());
     }
 
     public function testInvalidLangEmpty ()
     {
-        $this->invalid(lang: '');
+        $this->assert(lang: '');
     }
     
     public function testInvalidLangWithWhiteSpaces ()
     {
-        $this->invalid(lang: '   ');
+        $this->assert(lang: '   ');
     }
 
     public function testInvalidLangUpperCaseCharacters ()
     {
         $string = strtoupper(($this->faker->word()));
-        $this->invalid(lang: $string);
+        $this->assert(lang: $string);
     }
 
     public function testInvalidLangOneCharacter ()
     {
         $string = $this->testhelper->generateRandomLetters(1);
-        $this->invalid(lang: $string);
+        $this->assert(lang: $string);
     }
 
     // token
 
     public function testInvalidTkEmpty ()
     {
-        $this->invalid(tk: '');
+        $this->assert(tk: '');
     }
     
-    public function testInvalidNTkWithWhiteSpaces ()
+    public function testInvalidTkWithWhiteSpaces ()
     {
-        $this->invalid(tk: '   ');
+        $this->assert(tk: '   ');
     }
 
     // limit
 
     public function testInvalidLimitWithSymbols ()
     {
-        $this->invalid(limit: $this->testhelper->randomSymbols(5));
+        $this->assert(limit: $this->testhelper->randomSymbols(5));
     }
 
     public function testInvalidLimitEmpty ()
     {
-        $this->invalid(limit: '');
+        $this->assert(limit: '');
     }
     
     public function testInvalidLimitWithWhiteSpaces ()
     {
-        $this->invalid(limit: '   ');
+        $this->assert(limit: '   ');
     }
 
     public function testInvalidLimitUpperCaseCharacters ()
     {
         $string = strtoupper(($this->faker->word()));
-        $this->invalid(limit: $string);
+        $this->assert(limit: $string);
     }
 
     public function testInvalidLimitLowerCaseCharacters ()
     {
         $string = strtolower(($this->faker->word()));
-        $this->invalid(limit: $string);
+        $this->assert(limit: $string);
     }
 }
